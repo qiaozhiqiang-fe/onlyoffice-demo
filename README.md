@@ -73,6 +73,8 @@ node server.js
 ### 5. 访问应用
 打开浏览器访问: `http://localhost:3000`
 
+![project-demo](./assets/project-demo.png)
+
 ## 🔧 配置说明
 
 ### 服务器配置
@@ -80,11 +82,14 @@ node server.js
 - **上传目录**: `public/uploads/`
 - **静态文件**: `public/` 目录
 
+
 ### OnlyOffice 配置
 - **Document Server 地址**: `http://localhost:8080`
 - **API 脚本**: `http://localhost:8080/web-apps/apps/api/documents/api.js`
 
-[预览页面](./assets/onlyoffice-server.png)
+![onlyoffice-server](./assets/onlyoffice-server.png)
+
+![docker服务](./assets/docker-server.png)
 
 ### JWT 配置
 ```javascript
