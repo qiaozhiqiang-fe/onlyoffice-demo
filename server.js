@@ -44,6 +44,8 @@ function generateJWT(payload) {
 // 上传接口
 app.post("/upload", upload.single("ppt"), (req, res) => {
   const file = req.file;
+  const mode = req.body.mode || "view"; // 默认为预览模式，可选 "view" 或 "presentation"
+
   // 使用本机IP地址，让Docker容器能够访问
   const fileUrl = `http://172.16.201.146:3000/uploads/${file.filename}`;
 
@@ -57,11 +59,23 @@ app.post("/upload", upload.single("ppt"), (req, res) => {
     },
     documentType: "slide",
     editorConfig: {
-      mode: "view", // ✅ 只读预览模式
+      mode: "view", // OnlyOffice只支持view模式
       callbackUrl: "http://172.16.201.146:3000/callback", // 回调URL
+      customization: {
+        autosave: false,
+        forcesave: false,
+        showReviewChanges: false,
+        compactToolbar: mode === "presentation",
+        toolbarNoTabs: mode === "presentation",
+        toolbarHideFileName: mode === "presentation",
+        hideRightMenu: mode === "presentation",
+        hideRulers: mode === "presentation",
+        zoom: mode === "presentation" ? 100 : -1,
+      }
     },
     height: "100%",
     width: "100%",
+    type: "desktop",
   };
 
   // 为JWT创建payload - OnlyOffice需要特定的结构
@@ -69,6 +83,7 @@ app.post("/upload", upload.single("ppt"), (req, res) => {
     document: config.document,
     documentType: config.documentType,
     editorConfig: config.editorConfig,
+    type: config.type,
     iss: "onlyoffice", // 发行者
     aud: "onlyoffice"  // 受众
   };

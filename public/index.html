@@ -9,14 +9,119 @@
         margin: 0;
         padding: 20px;
         font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .upload-section {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+      }
+
+      .file-upload {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .upload-btn {
+        padding: 10px 20px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s ease;
+      }
+
+      .upload-btn:hover {
+        background: #5a6fd8;
+      }
+
+      .mode-selector {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .mode-buttons {
+        display: flex;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .mode-btn {
+        padding: 8px 16px;
+        background: white;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s ease;
+      }
+
+      .mode-btn.active {
+        background: #667eea;
+        color: white;
+      }
+
+      .mode-btn:hover:not(.active) {
+        background: #f8f9ff;
+      }
+
+      .control-buttons {
+        display: none;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .control-buttons.show {
+        display: flex;
+      }
+
+      .control-btn {
+        padding: 8px 16px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s ease;
+      }
+
+      .control-btn:hover {
+        background: #5a6fd8;
       }
 
       #viewer {
         width: 100%;
         height: 800px !important;
-        margin-top: 20px;
         border: 1px solid #ddd;
         border-radius: 4px;
+        background: #fafafa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        font-size: 16px;
+      }
+
+      #viewer.loaded {
+        background: white;
+        color: inherit;
       }
 
       /* 确保OnlyOffice iframe填满容器 */
@@ -30,23 +135,171 @@
       #viewer > div {
         height: 100% !important;
       }
+
+      .status-info {
+        margin-top: 10px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #666;
+        display: none;
+      }
+
+      .status-info.show {
+        display: block;
+      }
+
+      .error-message {
+        color: #dc3545;
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+        display: none;
+      }
+
+      .error-message.show {
+        display: block;
+      }
+
+      .mode-description {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+      }
+
+      .presentation-note {
+        background: #e7f3ff;
+        border: 1px solid #b3d9ff;
+        color: #0066cc;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+        font-size: 14px;
+        display: none;
+      }
+
+      .presentation-note.show {
+        display: block;
+      }
     </style>
   </head>
   <body>
-    <h2>上传 PPT 文件并在线预览</h2>
-    <input type="file" id="fileInput" accept=".ppt,.pptx" />
-    <div id="viewer"></div>
+    <div class="container">
+      <h2>📊 ONLYOFFICE PPT 预览 Demo</h2>
+
+      <div class="upload-section">
+        <div class="file-upload">
+          <input type="file" id="fileInput" accept=".ppt,.pptx" style="display: none;" />
+          <button class="upload-btn" onclick="document.getElementById('fileInput').click()">选择PPT文件</button>
+        </div>
+
+        <div class="mode-selector">
+          <label>查看模式：</label>
+          <div class="mode-buttons">
+            <button class="mode-btn active" data-mode="view">📄 预览模式</button>
+            <button class="mode-btn" data-mode="presentation">🎥 演示模式</button>
+          </div>
+        </div>
+
+        <div class="mode-description">
+          <span id="modeDesc">预览模式：可查看和浏览PPT内容</span>
+        </div>
+
+        <div class="presentation-note" id="presentationNote">
+          💡 演示模式：选择文件后将自动进入全屏幻灯片播放，使用方向键或鼠标控制切换，按ESC退出
+        </div>
+
+        <div class="control-buttons" id="controlButtons">
+          <button class="control-btn" id="reloadBtn">🔄 重新加载</button>
+          <button class="control-btn" id="startSlideshowBtn" style="display: none;">▶️ 开始幻灯片</button>
+          <button class="control-btn" id="endSlideshowBtn" style="display: none;">⏹️ 结束幻灯片</button>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="status-info" id="statusInfo">请选择一个PPT文件开始预览</div>
+      </div>
+
+      <div id="viewer">请先上传PPT文件</div>
+    </div>
 
     <script>
-      const input = document.getElementById("fileInput");
-      input.addEventListener("change", async () => {
-        const file = input.files[0];
-        if (!file) return;
+      let currentFile = null;
+      let currentMode = 'view';
+      let docEditor = null;
 
-        const formData = new FormData();
-        formData.append("ppt", file);
+      const fileInput = document.getElementById('fileInput');
+      const modeButtons = document.querySelectorAll('.mode-btn');
+      const controlButtons = document.getElementById('controlButtons');
+      const reloadBtn = document.getElementById('reloadBtn');
+      const startSlideshowBtn = document.getElementById('startSlideshowBtn');
+      const endSlideshowBtn = document.getElementById('endSlideshowBtn');
+      const statusInfo = document.getElementById('statusInfo');
+      const errorMessage = document.getElementById('errorMessage');
+      const viewer = document.getElementById('viewer');
+      const modeDesc = document.getElementById('modeDesc');
+      const presentationNote = document.getElementById('presentationNote');
 
+      const modeDescriptions = {
+        view: '预览模式：可查看和浏览PPT内容',
+        presentation: '演示模式：选择文件后自动进入幻灯片播放'
+      };
+
+      // 显示错误信息
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.classList.add('show');
+        setTimeout(() => {
+          errorMessage.classList.remove('show');
+        }, 5000);
+      }
+
+      // 显示状态信息
+      function showStatus(message) {
+        statusInfo.textContent = message;
+        statusInfo.classList.add('show');
+      }
+
+      // 隐藏状态信息
+      function hideStatus() {
+        statusInfo.classList.remove('show');
+      }
+
+      // 模式切换
+      modeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          modeButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentMode = btn.dataset.mode;
+
+          // 更新模式描述
+          modeDesc.textContent = modeDescriptions[currentMode];
+
+          // 显示/隐藏演示模式说明
+          if (currentMode === 'presentation') {
+            presentationNote.classList.add('show');
+          } else {
+            presentationNote.classList.remove('show');
+          }
+
+          // 如果已有文件，重新加载
+          if (currentFile) {
+            loadDocument(currentFile, currentMode);
+          }
+        });
+      });
+
+      // 加载文档
+      async function loadDocument(file, mode) {
         try {
+          showStatus(`正在加载${mode === 'presentation' ? '演示' : '预览'}模式...`);
+
+          const formData = new FormData();
+          formData.append("ppt", file);
+          formData.append("mode", mode);
+
           const res = await fetch("http://localhost:3000/upload", {
             method: "POST",
             body: formData,
@@ -63,14 +316,184 @@
           config.width = "100%";
 
           // 清空viewer内容
-          document.getElementById("viewer").innerHTML = "";
+          viewer.innerHTML = "";
+          viewer.classList.add('loaded');
+
+          // 添加文档就绪事件处理
+          config.events = {
+            onDocumentReady: function() {
+              hideStatus();
+              controlButtons.classList.add('show');
+
+              // 根据模式显示相应的控制按钮
+              if (mode === 'presentation') {
+                startSlideshowBtn.style.display = 'inline-block';
+                endSlideshowBtn.style.display = 'none';
+
+                showStatus('🎥 演示模式已启动，正在进入幻灯片播放...');
+
+                // 延迟确保文档完全加载，然后启动幻灯片
+                setTimeout(() => {
+                  try {
+                    // 使用正确的 OnlyOffice API 方法 (OnlyOffice 8.0+)
+                    if (window.Asc && window.Asc.plugin && window.Asc.plugin.executeMethod) {
+                      window.Asc.plugin.executeMethod("StartSlideShow");
+                      startSlideshowBtn.style.display = 'none';
+                      endSlideshowBtn.style.display = 'inline-block';
+                      showStatus('🎥 幻灯片播放已启动，使用方向键切换，按ESC退出');
+
+                      // 请求全屏
+                      setTimeout(() => {
+                        if (viewer.requestFullscreen) {
+                          viewer.requestFullscreen().catch(err => {
+                            console.log('全屏请求失败:', err);
+                          });
+                        } else if (viewer.webkitRequestFullscreen) {
+                          viewer.webkitRequestFullscreen();
+                        } else if (viewer.msRequestFullscreen) {
+                          viewer.msRequestFullscreen();
+                        }
+                      }, 500);
+                    } else {
+                      throw new Error('OnlyOffice API 未完全加载');
+                    }
+                  } catch (error) {
+                    console.error('启动幻灯片失败:', error);
+                    showError('自动启动幻灯片失败，请手动点击"开始幻灯片"按钮或文档工具栏中的播放按钮（▶️图标）');
+                  }
+                }, 2000);
+              } else {
+                startSlideshowBtn.style.display = 'none';
+                endSlideshowBtn.style.display = 'none';
+                showStatus('📄 预览模式已加载');
+              }
+            },
+            onError: function(event) {
+              showError('文档加载失败: ' + (event.data || '未知错误'));
+            },
+            onSlideShowStart: function() {
+              console.log('幻灯片播放已开始');
+              startSlideshowBtn.style.display = 'none';
+              endSlideshowBtn.style.display = 'inline-block';
+              showStatus('🎥 幻灯片播放已开始，使用方向键切换，按ESC退出');
+            },
+            onSlideShowEnd: function() {
+              console.log('幻灯片播放已结束');
+              startSlideshowBtn.style.display = 'inline-block';
+              endSlideshowBtn.style.display = 'none';
+              showStatus('幻灯片播放已结束');
+              // 退出全屏
+              if (document.exitFullscreen) {
+                document.exitFullscreen();
+              } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+              } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+              }
+            }
+          };
 
           // 初始化编辑器
-          new DocsAPI.DocEditor("viewer", config);
+          docEditor = new DocsAPI.DocEditor("viewer", config);
+          currentFile = file;
 
         } catch (error) {
-          console.error("Error uploading file:", error);
-          alert("文件上传失败: " + error.message);
+          console.error("Error loading document:", error);
+          showError("文档加载失败: " + error.message);
+          hideStatus();
+        }
+      }
+
+      // 文件选择处理
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          loadDocument(file, currentMode);
+        }
+      });
+
+      // 重新加载按钮
+      reloadBtn.addEventListener('click', () => {
+        if (currentFile) {
+          loadDocument(currentFile, currentMode);
+        }
+      });
+
+      // 手动开始幻灯片按钮
+      startSlideshowBtn.addEventListener('click', () => {
+        try {
+          if (window.Asc && window.Asc.plugin && window.Asc.plugin.executeMethod) {
+            window.Asc.plugin.executeMethod("StartSlideShow");
+            showStatus('🎥 手动启动幻灯片播放');
+
+            // 请求全屏
+            setTimeout(() => {
+              if (viewer.requestFullscreen) {
+                viewer.requestFullscreen();
+              } else if (viewer.webkitRequestFullscreen) {
+                viewer.webkitRequestFullscreen();
+              } else if (viewer.msRequestFullscreen) {
+                viewer.msRequestFullscreen();
+              }
+            }, 500);
+          } else {
+            showError('OnlyOffice API 未加载，无法启动幻灯片');
+          }
+        } catch (error) {
+          console.error('手动启动幻灯片失败:', error);
+          showError('启动幻灯片失败: ' + error.message);
+        }
+      });
+
+      // 手动结束幻灯片按钮
+      endSlideshowBtn.addEventListener('click', () => {
+        try {
+          if (window.Asc && window.Asc.plugin && window.Asc.plugin.executeMethod) {
+            window.Asc.plugin.executeMethod("EndSlideShow");
+            showStatus('已结束幻灯片播放');
+          } else {
+            showError('OnlyOffice API 未加载，无法结束幻灯片');
+          }
+        } catch (error) {
+          console.error('结束幻灯片失败:', error);
+          showError('结束幻灯片失败: ' + error.message);
+        }
+      });
+
+      // 键盘快捷键支持
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          // ESC键退出全屏
+          if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+            if (document.exitFullscreen) {
+              document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+              document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+              document.msExitFullscreen();
+            }
+          }
+        } else if (e.key === 'F5' && currentFile) {
+          e.preventDefault();
+          // F5快速启动演示模式
+          if (currentMode !== 'presentation') {
+            modeButtons[1].click(); // 切换到演示模式
+          } else {
+            loadDocument(currentFile, 'presentation'); // 重新加载演示模式
+          }
+        }
+      });
+
+      // 监听全屏变化事件
+      document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+          showStatus('已退出全屏模式');
+        }
+      });
+
+      document.addEventListener('webkitfullscreenchange', () => {
+        if (!document.webkitFullscreenElement) {
+          showStatus('已退出全屏模式');
         }
       });
     </script>
