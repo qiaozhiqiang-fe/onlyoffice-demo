@@ -25,8 +25,8 @@ app.use('/uploads', express.static('public/uploads', {
 
 const upload = multer({ dest: "public/uploads/" });
 
-// JWT密钥 (生产环境应使用环境变量)
-const JWT_SECRET = "zFEdwSUA4sCHnONB7TeHsXOGc7ClU2fw";
+// JWT密钥 (生产环境应使用环境变量)，每次启动Document Server服务之后需要通过OnlyOffice 配置页面中提示方式获取
+const JWT_SECRET = "WIMELWP0fr2njAoMAfPkcJrlqRF0nc6K";
 
 // 生成JWT令牌
 function generateJWT(payload) {

@@ -93,7 +93,8 @@ node server.js
 
 ### JWT 配置
 ```javascript
-const JWT_SECRET = "zFEdwSUA4sCHnONB7TeHsXOGc7ClU2fw"; // 生产环境请使用环境变量
+// JWT密钥 (生产环境应使用环境变量)，每次启动Document Server服务之后需要通过OnlyOffice 配置页面中提示方式获取
+const JWT_SECRET = "WIMELWP0fr2njAoMAfPkcJrlqRF0nc6K"; // 生产环境请使用环境变量
 ```
 
 ## 📁 项目结构
